@@ -1,0 +1,81 @@
+#!/usr/bin/with-contenv bash
+
+PUID=${PUID:-1000}
+PGID=${PGID:-1000}
+
+_BANNER_='
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnns+++ynnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn/.-:.  .ynnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn+snnnns` -nnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn. +nnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn:`onnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnny./hnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnh::hnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn+-ynnnnhnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnhyso+/:-.:nnnnnnnnnnnny+:.````.-+ynnnnnnnno`.++++/-onnnnnnnnnn
+ nnnnnnnnnyo+/:-.`          ynnnnnnnnny/`            /nnnnnno--------+nnnnnnnnnnn
+ nnnnnnnnno:--.`           /nnnnnnnno.    ``          +nnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnny-        .nnnnnnno`  -ohnnny.        :nnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnn/        snnnnns. `+hnnnnnnn+        /nnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnn`       :nnnny- `+nnnnnnnnnn:        ynnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnn+       `hnnn+  /hnnnnnnnnnnn`       :nnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnh`       +nny. .ynnnnnnnnnnnn+        ynnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnn+       .nn+  +nnnnnnnnnnnnnn`       :nnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnh`       yh- .ynnnnnnnnnnnnnn+        ynnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnn/       /y` :nnnnnnnnnnnnnnnn`       /nnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnny       `/  +nnnnnnnnnnnnnnnn+       `hnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnn:         `snnnnnnnnnnnnnnnnh`       +nnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnny         `ynnnnnnnnnnnnnnnnn+       `nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnn-        `ynnnnnnnnnnnnnnnnnh`       onnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnns        `ynnnnnnnnnnnnnnnnnn/       .nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnn.        snnnnnnnnnnnnnnnnnnh`       snnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnn+        :nnnnnnnnnnnnnnnnnnn/       -nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnh`       .nnnnnnnnnnnnnnnnnnnh        ynnnnnnnh:/nnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnn/        snnnnnnnnnnnnnnnnnnn:       :nnnnnnn+ `+nnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnh        :nnnnnnnnnnnnnnnnnnny        ynnnnns. -hnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnn:       `hnnnnnnnnnnnnnnnnnnn/       .nnnns- `onnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnny        onnnnnnnnnnnnnnnnnnnn:        :+/.  /hnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnn-       -nnnnnnnnnnnnnnnnnnnnno           `/hnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnny-------:ynnnnnnnnnnnnnnnnnnnnnn+`     `./snnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnhyyyhnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+ nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+';
+
+
+user_config() {
+    echo "**** [base-ubuntu] (user_config) Setting up user GID/UID ****";
+    groupmod -o -g "${PGID}" docker;
+    usermod -o -u "${PUID}" docker;
+    chown docker:docker /app;
+    chown docker:docker /config;
+    chown docker:docker /defaults;
+    echo "
+    -------------------------------------
+    User uid:    $(id -u docker)
+    User gid:    $(id -g docker)
+    -------------------------------------
+    ";
+}
+
+
+hosts_config() {
+    mkdir -p \
+        /config/etc;
+    if [[ ! -f /config/etc/hosts ]]; then
+        echo "**** [base-ubuntu] (hosts_config) Configuring hosts default file ****";
+        cat /etc/hosts > /config/etc/hosts;
+    fi
+    if [[ $(cmp --silent /config/etc/hosts /etc/hosts || echo 1) ]]; then
+        echo "**** [base-ubuntu] (hosts_config) Updating hosts file ****";
+        cat /config/etc/hosts > /etc/hosts;
+    fi 
+    chown -R ${PUID}:${PGID} \
+        /config/etc/hosts;
+}
+
+echo "${_BANNER_}";
+user_config;
+hosts_config;
