@@ -20,6 +20,7 @@
 |                          | tzdata                   |
 |                          | unzip                    |
 |                          | xz-utils                 |
+|                          | vim                      |
 |                          |                          |
 
 
