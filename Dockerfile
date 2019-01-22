@@ -26,6 +26,7 @@ RUN \
             tzdata \
             unzip \
             xz-utils \
+            vim \
     && \
     echo "**** add s6 overlay ****" \
         && curl -o \
