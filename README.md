@@ -19,8 +19,8 @@
 |                          | tar                      |
 |                          | tzdata                   |
 |                          | unzip                    |
-|                          | xz-utils                 |
 |                          | vim                      |
+|                          | xz-utils                 |
 |                          |                          |
 
 
